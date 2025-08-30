@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pi Storage - Mathematical Data Encoding</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Pi Storage</h1>
+            <p>Encode and decode messages using mathematical constants</p>
+        </header>
+
+        <main>
+            <section id="encode-section" class="section">
+                <h2>Encode Message to 4 Values</h2>
+                <div class="form-group">
+                    <label for="encode-message">Enter your message:</label>
+                    <textarea id="encode-message" placeholder="Type your message here..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="encode-base">Numeric Base (2-65536):</label>
+                    <input type="number" id="encode-base" value="16" min="2" max="65536">
+                </div>
+                <button id="encode-btn">Encode Message</button>
+                <div id="encode-result" class="result hidden">
+                    <h3>Encoded Values:</h3>
+                    <div class="values">
+                        <div>Constant: <span id="constant-value"></span></div>
+                        <div>Base: <span id="base-value"></span></div>
+                        <div>Starting Point: <span id="start-value"></span></div>
+                        <div>Length: <span id="length-value"></span></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="decode-section" class="section">
+                <h2>Decode 4 Values to Message</h2>
+                <div class="form-group">
+                    <label for="decode-constant">Constant:</label>
+                    <select id="decode-constant">
+                        <option value="pi">Pi (π)</option>
+                        <option value="e">Euler's number (e)</option>
+                        <option value="phi">Golden ratio (φ)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="decode-base">Numeric Base:</label>
+                    <input type="number" id="decode-base" min="2" max="65536">
+                </div>
+                <div class="form-group">
+                    <label for="decode-start">Starting Point:</label>
+                    <input type="number" id="decode-start" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="decode-length">Length:</label>
+                    <input type="number" id="decode-length" min="1">
+                </div>
+                <button id="decode-btn">Decode Message</button>
+                <div id="decode-result" class="result hidden">
+                    <h3>Decoded Message:</h3>
+                    <div class="message" id="decoded-message"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
