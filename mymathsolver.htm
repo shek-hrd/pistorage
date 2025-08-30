@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Sequence in e's Decimal Expansion</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        #status {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Find Sequence in e's Decimal Expansion</h1>
+<p>
+    This tool finds the first occurrence of the sequence `654651899476546654684768465334638436265365123202689` in the decimal expansion of $$ e $$ (Euler's number).
+</p>
+
+<button onclick="findSequence()">Find Sequence</button>
+
+<div id="status"></div>
+<div id="result"></div>
+
+<script>
+// Function to calculate e to a specified number of digits
+function calculateE(digits) {
+    let e = 2; // e starts with 2 before the decimal point
+    let factor = 1;
+    for (let i = 1; i <= digits; i++) {
+        factor *= i;
+        e += 1 / factor;
+    }
+    return e;
+}
+
+// Function to find the first occurrence of the sequence in e's decimal expansion
+function findSequence() {
+    const sequence = '654651899476546654684768465334638436265365123202689';
+    const digitsToCalculate = 100000; // Calculate up to 100,000 digits of e
+    const e = calculateE(digitsToCalculate);
+    const eString = e.toString().slice(2); // Remove "2." part to get decimal digits
+
+    document.getElementById('status').textContent = 'Searching...';
+
+    const startTime = performance.now();
+    const position = eString.indexOf(sequence); // Find the first occurrence
+
+    const endTime = performance.now();
+    const elapsedTime = (endTime - startTime).toFixed(3); // Time in milliseconds
+
+    if (position !== -1) {
+        document.getElementById('result').textContent = `Sequence found at position ${position + 1}.`;
+    } else {
+        document.getElementById('result').textContent = 'Sequence not found.';
+    }
+
+    document.getElementById('status').textContent = `Search completed in ${elapsedTime} ms.`;
+}
+
+</script>
+
+</body>
+</html>
