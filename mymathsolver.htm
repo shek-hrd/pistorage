@@ -16,6 +16,9 @@
         #status {
             margin-top: 10px;
         }
+        #progress {
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -28,6 +31,9 @@
 <button onclick="findSequence()">Find Sequence</button>
 
 <div id="status"></div>
+<div id="progress">
+    <progress id="progressBar" value="0" max="100"></progress>
+</div>
 <div id="result"></div>
 
 <script>
@@ -45,27 +51,45 @@ function calculateE(digits) {
 // Function to find the first occurrence of the sequence in e's decimal expansion
 function findSequence() {
     const sequence = '654651899476546654684768465334638436265365123202689';
-    const digitsToCalculate = 100000; // Calculate up to 100,000 digits of e
-    const e = calculateE(digitsToCalculate);
-    const eString = e.toString().slice(2); // Remove "2." part to get decimal digits
+    const maxDigits = 1000000; // We will now try to generate up to 1,000,000 digits of e
+    const increment = 50000;  // We generate 50,000 digits at a time
+    let digitsCalculated = 0;
+    let found = false;
+    let position = -1;
 
-    document.getElementById('status').textContent = 'Searching...';
+    document.getElementById('status').textContent = 'Starting the search...';
+    document.getElementById('progressBar').value = 0; // Reset the progress bar
 
     const startTime = performance.now();
-    const position = eString.indexOf(sequence); // Find the first occurrence
+
+    while (digitsCalculated < maxDigits && !found) {
+        const e = calculateE(digitsCalculated + increment);
+        const eString = e.toString().slice(2); // Remove "2." part to get decimal digits
+
+        // Search for the sequence in the current portion of e
+        position = eString.indexOf(sequence);
+        
+        if (position !== -1) {
+            found = true;
+        } else {
+            // Update the progress bar and status
+            digitsCalculated += increment;
+            document.getElementById('progressBar').value = (digitsCalculated / maxDigits) * 100;
+            document.getElementById('status').textContent = `Searching... ${digitsCalculated} digits calculated`;
+        }
+    }
 
     const endTime = performance.now();
     const elapsedTime = (endTime - startTime).toFixed(3); // Time in milliseconds
 
-    if (position !== -1) {
+    if (found) {
         document.getElementById('result').textContent = `Sequence found at position ${position + 1}.`;
     } else {
-        document.getElementById('result').textContent = 'Sequence not found.';
+        document.getElementById('result').textContent = 'Sequence not found within the calculated digits.';
     }
 
     document.getElementById('status').textContent = `Search completed in ${elapsedTime} ms.`;
 }
-
 </script>
 
 </body>
