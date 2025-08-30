@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Find Sequence in e</title>
+</head>
+<body>
+    <input id="sequence" type="text" placeholder="Enter sequence">
+    <button onclick="findSequence()">Find</button>
+    <p id="result"></p>
+
+    <script>
+        function findSequence() {
+            const sequence = document.getElementById('sequence').value;
+            let a = 0;
+            let b = 1;
+            let decimals = 0;
+            let decimalExpansion = '';
+
+            while (true) {
+                a = b;
+                b = a + 1 / factorial(decimals + 1);
+                decimals++;
+
+                // Bailey–Borwein–Plouffe formula for e
+                const eDigit = Math.floor((b - a) * Math.pow(10, decimals));
+                decimalExpansion += eDigit.toString();
+
+                if (decimalExpansion.includes(sequence)) {
+                    document.getElementById('result').innerText = `Sequence found at position ${decimalExpansion.indexOf(sequence) + 1}`;
+                    break;
+                }
+            }
+        }
+
+        function factorial(n) {
+            let result = 1;
+            for (let i = 2; i <= n; i++) {
+                result *= i;
+            }
+            return result;
+        }
+    </script>
+</body>
+</html>
