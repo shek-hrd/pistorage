@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mathematical Constant Data Encoder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        textarea, input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px 0 0;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .result {
+            background-color: #e8f4fc;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            background-color: #eee;
+            cursor: pointer;
+            border-radius: 4px 4px 0 0;
+        }
+        .tab.active {
+            background-color: #3498db;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .info {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mathematical Constant Data Encoder</h1>
+        <p>This system encodes messages using mathematical constants like π, e, and φ.</p>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('encode')">Encode Message</div>
+            <div class="tab" onclick="showTab('decode')">Decode Message</div>
+        </div>
+        
+        <div id="encode" class="tab-content active">
+            <h2>Encode Message</h2>
+            <textarea id="messageInput" placeholder="Enter your message here..." rows="4"></textarea>
+            
+            <label for="baseSelect">Numeric Base:</label>
+            <select id="baseSelect">
+                <option value="10">Decimal (10)</option>
+                <option value="16">Hexadecimal (16)</option>
+                <option value="36">Base 36</option>
+                <option value="62">Base 62</option>
+                <option value="95">ASCII Printable (95)</option>
+            </select>
+            
+            <label for="constantSelect">Mathematical Constant:</label>
+            <select id="constantSelect">
+                <option value="pi">π (Pi)</option>
+                <option value="e">e (Euler's Number)</option>
+                <option value="phi">φ (Golden Ratio)</option>
+            </select>
+            
+            <button onclick="encodeMessage()">Encode Message</button>
+            
+            <div class="result" id="encodeResult">
+                Encoded values will appear here...
+            </div>
+        </div>
+        
+        <div id="decode" class="tab-content">
+            <h2>Decode Message</h2>
+            <div class="info">Enter the four values separated by commas (base, constant, start, length):</div>
+            <input type="text" id="decodeInput" placeholder="Example: 36,pi,1234,5">
+            <button onclick="decodeMessage()">Decode Message</button>
+            
+            <div class="result" id="decodeResult">
+                Decoded message will appear here...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Show tab function
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+        
+        // Encode message function
+        function encodeMessage() {
+            const message = document.getElementById('messageInput').value;
+            const base = parseInt(document.getElementById('baseSelect').value);
+            const constant = document.getElementById('constantSelect').value;
+            
+            if (!message) {
+                alert("Please enter a message to encode");
+                return;
+            }
+            
+            try {
+                const result = encodePayload(message, base, constant);
+                document.getElementById('encodeResult').innerHTML = 
+                    `<strong>Base:</strong> ${result.base}\n` +
+                    `<strong>Constant:</strong> ${result.constant}\n` +
+                    `<strong>Start:</strong> ${result.start}\n` +
+                    `<strong>Length:</strong> ${result.length}\n\n` +
+                    `<strong>Encoded String:</strong>\n${result.base},${result.constant},${result.start},${result.length}`;
+            } catch (error) {
+                document.getElementById('encodeResult').innerHTML = `Error: ${error.message}`;
+            }
+        }
+        
+        // Decode message function
+        function decodeMessage() {
+            const input = document.getElementById('decodeInput').value;
+            const parts = input.split(',');
+            
+            if (parts.length !== 4) {
+                alert("Please enter four values separated by commas");
+                return;
+            }
+            
+            const base = parts[0].trim();
+            const constant = parts[1].trim();
+            const start = parts[2].trim();
+            const length = parts[3].trim();
+            
+            try {
+                const message = decodePayload(base, constant, start, length);
+                document.getElementById('decodeResult').innerHTML = `<strong>Decoded Message:</strong>\n${message}`;
+            } catch (error) {
+                document.getElementById('decodeResult').innerHTML = `Error: ${error.message}`;
+            }
+        }
+        
+        // Mathematical constants (simplified expansions)
+        const CONSTANTS = {
+            pi: "1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679",
+            e: "7182818284590452353602874713526624977572470936999595749669676277240766303535475945713821785251664274",
+            phi: "6180339887498948482045868343656381177203091798057628621354486227052604628189024497072072041893911374"
+        };
+        
+        // Convert string to number in specified base
+        function stringToNumber(str, base) {
+            let result = 0;
+            for (let i = 0; i < str.length; i++) {
+                result = result * base + str.charCodeAt(i);
+            }
+            return result;
+        }
+        
+        // Convert number to string in specified base
+        function numberToString(num, base) {
+            if (num === 0) return String.fromCharCode(0);
+            let result = '';
+            while (num > 0) {
+                result = String.fromCharCode(num % base) + result;
+                num = Math.floor(num / base);
+            }
+            return result;
+        }
+        
+        // Find sequence in constant
+        function findSequenceInConstant(sequence, constantName) {
+            const constant = CONSTANTS[constantName];
+            const index = constant.indexOf(sequence);
+            if (index === -1) {
+                // In a real implementation, we would search further in the constant
+                throw new Error(`Sequence not found in the first ${constant.length} digits of ${constantName}`);
+            }
+            return { start: index, length: sequence.length };
+        }
+        
+        // Encode payload function
+        function encodePayload(payload, base, constant) {
+            // Convert payload to a sequence in the specified base
+            let sequence = '';
+            for (let i = 0; i < payload.length; i++) {
+                const charCode = payload.charCodeAt(i);
+                sequence += charCode.toString(base);
+                if (i < payload.length - 1) sequence += '0'; // Separator
+            }
+            
+            // Find this sequence in the constant
+            const position = findSequenceInConstant(sequence, constant);
+            
+            return {
+                base: base,
+                constant: constant,
+                start: position.start.toString(base),
+                length: position.length.toString(base)
+            };
+        }
+        
+        // Decode payload function
+        function decodePayload(base, constant, start, length) {
+            const startNum = parseInt(start, base);
+            const lengthNum = parseInt(length, base);
+            
+            // Get sequence from constant
+            const constantStr = CONSTANTS[constant];
+            if (startNum + lengthNum > constantStr.length) {
+                throw new Error("Sequence extends beyond available constant digits");
+            }
+            
+            const sequence = constantStr.substring(startNum, startNum + lengthNum);
+            
+            // Convert sequence back to payload
+            const parts = sequence.split('0');
+            let payload = '';
+            for (let part of parts) {
+                if (part) {
+                    payload += String.fromCharCode(parseInt(part, base));
+                }
+            }
+            
+            return payload;
+        }
+    </script>
+</body>
+</html>
