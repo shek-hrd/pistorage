@@ -19,6 +19,17 @@
         #progress {
             margin-top: 20px;
         }
+        #stopButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: red;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #stopButton:disabled {
+            background-color: grey;
+        }
     </style>
 </head>
 <body>
@@ -29,6 +40,7 @@
 </p>
 
 <button onclick="findSequence()">Find Sequence</button>
+<button id="stopButton" onclick="stopSearch()" disabled>Stop Search</button>
 
 <div id="status"></div>
 <div id="progress">
@@ -37,6 +49,15 @@
 <div id="result"></div>
 
 <script>
+// Flag to control the search status
+let searching = false;
+let stopRequested = false;
+let digitsCalculated = 0;
+let increment = 50000;
+let maxDigits = 1000000;
+let eString = '';
+let sequence = '654651899476546654684768465334638436265365123202689';
+
 // Function to calculate e to a specified number of digits
 function calculateE(digits) {
     let e = 2; // e starts with 2 before the decimal point
@@ -50,45 +71,62 @@ function calculateE(digits) {
 
 // Function to find the first occurrence of the sequence in e's decimal expansion
 function findSequence() {
-    const sequence = '654651899476546654684768465334638436265365123202689';
-    const maxDigits = 100000000; // We will now try to generate up to 1,000,000 digits of e
-    const increment = 50000;  // We generate 50,000 digits at a time
-    let digitsCalculated = 0;
-    let found = false;
-    let position = -1;
-
+    searching = true;
+    stopRequested = false;
+    digitsCalculated = 0;
+    eString = '';  // Clear previous digits
+    document.getElementById('stopButton').disabled = false;
     document.getElementById('status').textContent = 'Starting the search...';
     document.getElementById('progressBar').value = 0; // Reset the progress bar
 
     const startTime = performance.now();
 
-    while (digitsCalculated < maxDigits && !found) {
+    searchNextChunk();
+
+    function searchNextChunk() {
+        if (!searching) return;
+
+        // Calculate the next chunk of digits
         const e = calculateE(digitsCalculated + increment);
-        const eString = e.toString().slice(2); // Remove "2." part to get decimal digits
+        const newDigits = e.toString().slice(2); // Remove "2." part to get decimal digits
+        eString += newDigits; // Append the new digits to the existing ones
 
         // Search for the sequence in the current portion of e
-        position = eString.indexOf(sequence);
+        const position = eString.indexOf(sequence);
         
         if (position !== -1) {
-            found = true;
+            const endTime = performance.now();
+            const elapsedTime = (endTime - startTime).toFixed(3); // Time in milliseconds
+            document.getElementById('result').textContent = `Sequence found at position ${position + 1}.`;
+            document.getElementById('status').textContent = `Search completed in ${elapsedTime} ms.`;
+            document.getElementById('stopButton').disabled = true;
+            searching = false;
         } else {
-            // Update the progress bar and status
             digitsCalculated += increment;
-            document.getElementById('progressBar').value = (digitsCalculated / maxDigits) * 100;
+            const progress = (digitsCalculated / maxDigits) * 100;
+            document.getElementById('progressBar').value = progress;
             document.getElementById('status').textContent = `Searching... ${digitsCalculated} digits calculated`;
+
+            if (digitsCalculated >= maxDigits) {
+                // Expand the search range if not found
+                maxDigits += 1000000;  // Increase the search range by another million digits
+            }
+
+            // If not stopped, continue searching
+            if (!stopRequested) {
+                setTimeout(searchNextChunk, 0);  // Continue the search
+            } else {
+                document.getElementById('status').textContent = 'Search stopped by user.';
+                document.getElementById('stopButton').disabled = true;
+                searching = false;
+            }
         }
     }
+}
 
-    const endTime = performance.now();
-    const elapsedTime = (endTime - startTime).toFixed(3); // Time in milliseconds
-
-    if (found) {
-        document.getElementById('result').textContent = `Sequence found at position ${position + 1}.`;
-    } else {
-        document.getElementById('result').textContent = 'Sequence not found within the calculated digits.';
-    }
-
-    document.getElementById('status').textContent = `Search completed in ${elapsedTime} ms.`;
+// Function to stop the search
+function stopSearch() {
+    stopRequested = true;
 }
 </script>
 
