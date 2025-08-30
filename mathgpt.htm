@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>e-Digit Search Benchmark (Spigot)</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 2em auto;
+      max-width: 700px;
+      line-height: 1.4;
+    }
+    button {
+      margin: 0.5em 0.2em;
+      padding: 0.5em 1em;
+      font-size: 1em;
+    }
+    pre {
+      background: #f0f0f0;
+      padding: 1em;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Benchmark: Finding a 48-digit Pattern in e</h1>
+  <p>
+    Pattern: <code id="pattern">654651899476546654684768465334638436265365123202689</code>
+  </p>
+
+  <label>
+    Number of digits to scan:
+    <input id="digits" type="number" value="1000000" min="1000" step="1000" style="width:5em"/>
+  </label>
+  <br/>
+  <button id="run">Run Spigot + Rolling Window</button>
+
+  <h2>Result</h2>
+  <pre id="output">Click “Run” to start…</pre>
+
+  <script>
+    (function(){
+      const btn = document.getElementById('run');
+      const out = document.getElementById('output');
+      const PAT  = document.getElementById('pattern').textContent.trim();
+      const L    = PAT.length;
+      const POW  = BigInt(10) ** BigInt(L-1);  // for window mask
+
+      btn.addEventListener('click', ()=>{
+        const D = parseInt(document.getElementById('digits').value, 10);
+        out.textContent = `Running spigot for ${D.toLocaleString()} digits…\n`;
+        setTimeout(()=>{  // allow UI to update
+          const A = new Array(D+1).fill(0);
+          A[0] = 2;         // initial state for e = 2.71828…
+          let window = 0n;
+          let foundPos = -1;
+          const t0 = performance.now();
+
+          for(let i = 1; i <= D; i++){
+            // Rabinowitz–Wagon spigot step
+            let carry = 0;
+            for(let j = D; j >= 1; j--){
+              const x = 10 * A[j] + carry;
+              A[j] = x % (j+1);
+              carry = (x - A[j]) / (j+1);
+            }
+            A[0] = carry;
+            const digit = carry;     // next decimal digit of e
+
+            // rolling window (BigInt)
+            window = (window * 10n + BigInt(digit)) % (POW * 10n);
+
+            // once we have ≥ L digits, compare
+            if(i >= L){
+              if(window === BigInt(PAT)){
+                foundPos = i - L + 1;
+                break;
+              }
+            }
+          }
+
+          const t1 = performance.now();
+          out.textContent +=
+            `  Scanned up to digit: ${foundPos > 0 ? foundPos + L - 1 : D}\n` +
+            `  First match position: ${foundPos > 0 ? foundPos : 'not found'}\n` +
+            `  Time elapsed: ${ (t1 - t0).toFixed(1) } ms\n`;
+        }, 20);
+      });
+    })();
+  </script>
+
+</body>
+</html>
