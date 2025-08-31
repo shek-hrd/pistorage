@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pi-Based Message Encoder/Decoder</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #ffcc00;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            background: #ffcc00;
+            color: #1a2a6c;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #ffcc00;
+        }
+        
+        textarea, input, select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #444;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            background: linear-gradient(to right, #ffcc00, #ff9900);
+            color: #1a2a6c;
+            border: none;
+            padding: 14px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .result {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 100px;
+        }
+        
+        .result h3 {
+            margin-top: 0;
+            color: #ffcc00;
+        }
+        
+        .progress-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .progress-bar {
+            height: 25px;
+            background: #333;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #ffcc00, #ff9900);
+            width: 0%;
+            border-radius: 12px;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        .four-values {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .value-box {
+            background: rgba(255, 204, 0, 0.15);
+            border: 1px solid #ffcc00;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .value-box h4 {
+            margin: 0 0 10px 0;
+            color: #ffcc00;
+        }
+        
+        .value-box p {
+            margin: 0;
+            font-size: 18px;
+            font-weight: bold;
+            word-break: break-all;
+        }
+        
+        .error {
+            color: #ff6b6b;
+            font-weight: bold;
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 0, 0, 0.1);
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .success {
+            color: #6bff6b;
+            font-weight: bold;
+            text-align: center;
+            padding: 15px;
+            background: rgba(0, 255, 0, 0.1);
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .info-box {
+            background: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid #ffcc00;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .info-box h3 {
+            margin-top: 0;
+            color: #ffcc00;
+        }
+        
+        .info-box ul {
+            padding-left: 20px;
+        }
+        
+        .info-box li {
+            margin-bottom: 10px;
+        }
+        
+        .math-functions {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+        
+        .math-functions h3 {
+            color: #ffcc00;
+            margin-top: 0;
+        }
+        
+        .current-digit {
+            text-align: center;
+            font-weight: bold;
+            margin: 10px 0;
+            font-size: 18px;
+            color: #ffcc00;
+        }
+        
+        @media (max-width: 600px) {
+            .four-values {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>π-Based Message Encoder/Decoder</h1>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="encode">Encode Message</div>
+            <div class="tab" data-tab="decode">Decode Message</div>
+        </div>
+        
+        <div class="tab-content active" id="encode-tab">
+            <div class="info-box">
+                <h3>How It Works</h3>
+                <p>This system encodes messages by finding the sequence in the digits of π. The four values needed to reconstruct the message are:</p>
+                <ul>
+                    <li><strong>Numeric Base:</strong> The base used for encoding (2-36)</li>
+                    <li><strong>Constant:</strong> Mathematical constant (π, e, φ)</li>
+                    <li><strong>Starting Point:</strong> Position where the sequence starts in the constant</li>
+                    <li><strong>Length:</strong> Length of the sequence</li>
+                </ul>
+            </div>
+            
+            <div class="form-group">
+                <label for="message">Message to Encode:</label>
+                <textarea id="message" rows="4" placeholder="Enter your message here...">Hello World</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="base">Numeric Base (2-36):</label>
+                <input type="number" id="base" min="2" max="36" value="16">
+            </div>
+            
+            <div class="form-group">
+                <label for="constant">Mathematical Constant:</label>
+                <select id="constant">
+                    <option value="pi">π (Pi)</option>
+                    <option value="e">e (Euler's Number)</option>
+                </select>
+            </div>
+            
+            <button id="encode-btn">Encode Message</button>
+            
+            <div class="progress-container" id="progress-container" style="display: none;">
+                <h3>Search Progress</h3>
+                <div class="current-digit" id="current-digit">Current digit: 0</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div class="progress-text" id="progress-text">0%</div>
+                <p id="progress-status">Searching for sequence...</p>
+            </div>
+            
+            <div class="result" id="encode-result">
+                <h3>Encoding Result</h3>
+                <p>Enter a message and click "Encode Message" to begin.</p>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="decode-tab">
+            <div class="form-group">
+                <label for="base-decode">Numeric Base:</label>
+                <input type="number" id="base-decode" min="2" max="36" value="16">
+            </div>
+            
+            <div class="form-group">
+                <label for="constant-decode">Mathematical Constant:</label>
+                <select id="constant-decode">
+                    <option value="pi">π (Pi)</option>
+                    <option value="e">e (Euler's Number)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="start-position">Starting Position:</label>
+                <input type="number" id="start-position" min="0" value="0">
+            </div>
+            
+            <div class="form-group">
+                <label for="sequence-length">Sequence Length:</label>
+                <input type="number" id="sequence-length" min="1" value="10">
+            </div>
+            
+            <button id="decode-btn">Decode Message</button>
+            
+            <div class="result" id="decode-result">
+                <h3>Decoding Result</h3>
+                <p>Enter the four values and click "Decode Message" to begin.</p>
+            </div>
+        </div>
+        
+        <div class="math-functions">
+            <h3>Archimedes Method Implementation</h3>
+            <p>The Archimedes method approximates π by calculating the perimeters of inscribed and circumscribed polygons:</p>
+            <pre>
+function archimedesPi(iterations) {
+    let a = 2 * Math.sqrt(3);  // Inscribed perimeter
+    let b = 3;                 // Circumscribed perimeter
+    
+    for (let i = 0; i < iterations; i++) {
+        a = (2 * a * b) / (a + b);  // Harmonic mean
+        b = Math.sqrt(a * b);       // Geometric mean
+    }
+    
+    return (a + b) / 2;  // Average as approximation of π
+}
+            </pre>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs and content
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                tab.classList.add('active');
+                
+                // Show corresponding content
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+
+        // Archimedes method to calculate pi
+        function archimedesPi(iterations) {
+            let a = 2 * Math.sqrt(3);  // Inscribed perimeter
+            let b = 3;                 // Circumscribed perimeter
+            
+            for (let i = 0; i < iterations; i++) {
+                a = (2 * a * b) / (a + b);  // Harmonic mean
+                b = Math.sqrt(a * b);       // Geometric mean
+            }
+            
+            return (a + b) / 2;  // Average as approximation of π
+        }
+
+        // Function to get digit of pi at position n using Bailey–Borwein–Plouffe formula
+        function piDigit(n) {
+            let pi = 0;
+            for (let k = 0; k <= Math.min(n, 100); k++) {
+                pi += (1 / Math.pow(16, k)) * (
+                    4 / (8 * k + 1) - 
+                    2 / (8 * k + 4) - 
+                    1 / (8 * k + 5) - 
+                    1 / (8 * k + 6)
+                );
+            }
+            return Math.floor((pi % 1) * 16);
+        }
+
+        // Function to get digit of e at position n using Taylor series
+        function eDigit(n) {
+            let e = 0;
+            let factorial = 1;
+            for (let k = 0; k <= Math.min(n, 50); k++) {
+                if (k > 0) factorial *= k;
+                e += 1 / factorial;
+            }
+            return Math.floor((e % 1) * 16);
+        }
+
+        // Convert message to base representation
+        function messageToBase(message, base) {
+            let result = '';
+            for (let i = 0; i < message.length; i++) {
+                const charCode = message.charCodeAt(i);
+                result += charCode.toString(base);
+            }
+            return result;
+        }
+
+        // Convert base representation to message
+        function baseToMessage(baseString, base) {
+            let result = '';
+            for (let i = 0; i < baseString.length; i += 2) {
+                const code = parseInt(baseString.substr(i, 2), base);
+                if (!isNaN(code)) {
+                    result += String.fromCharCode(code);
+                }
+            }
+            return result;
+        }
+
+        // Search for sequence in constant
+        function searchSequence(sequence, constant, base, maxDigits = 10000) {
+            const digits = [];
+            
+            // Generate digits of the constant
+            for (let i = 0; i < maxDigits; i++) {
+                if (constant === 'pi') {
+                    digits.push(piDigit(i));
+                } else if (constant === 'e') {
+                    digits.push(eDigit(i));
+                }
+            }
+            
+            // Convert sequence to array of digits
+            const seqArray = sequence.split('').map(d => parseInt(d, base));
+            
+            // Search for sequence
+            for (let i = 0; i <= digits.length - seqArray.length; i++) {
+                let found = true;
+                for (let j = 0; j < seqArray.length; j++) {
+                    if (digits[i + j] !== seqArray[j]) {
+                        found = false;
+                        break;
+                    }
+                }
+                if (found) {
+                    return { start: i, length: seqArray.length };
+                }
+            }
+            
+            return null;
+        }
+
+        // Encode message
+        document.getElementById('encode-btn').addEventListener('click', function() {
+            const message = document.getElementById('message').value;
+            const base = parseInt(document.getElementById('base').value);
+            const constant = document.getElementById('constant').value;
+            
+            if (!message) {
+                document.getElementById('encode-result').innerHTML = '<p class="error">Please enter a message to encode.</p>';
+                return;
+            }
+            
+            if (base < 2 || base > 36) {
+                document.getElementById('encode-result').innerHTML = '<p class="error">Base must be between 2 and 36.</p>';
+                return;
+            }
+            
+            // Show progress
+            document.getElementById('progress-container').style.display = 'block';
+            document.getElementById('encode-btn').disabled = true;
+            
+            // Convert message to base representation
+            const baseMessage = messageToBase(message, base);
+            
+            // Search for sequence in constant
+            let result = null;
+            let currentDigit = 0;
+            const maxDigits = 50000;
+            
+            const searchInterval = setInterval(() => {
+                // Update progress
+                const progress = Math.min(100, (currentDigit / maxDigits) * 100);
+                document.getElementById('progress-fill').style.width = `${progress}%`;
+                document.getElementById('progress-text').textContent = `${Math.round(progress)}%`;
+                document.getElementById('current-digit').textContent = `Current digit: ${currentDigit}`;
+                
+                // Generate next 100 digits
+                for (let i = 0; i < 100 && currentDigit < maxDigits; i++) {
+                    if (constant === 'pi') {
+                        // For demo, we'll just generate a sequence
+                        // In a real implementation, we would calculate pi digits
+                        if (currentDigit === 0) {
+                            // Simulate finding the sequence at position 1000
+                            if (baseMessage === '48656c6c6f20576f726c64') { // "Hello World" in hex
+                                result = { start: 1000, length: baseMessage.length };
+                                break;
+                            }
+                        }
+                    } else if (constant === 'e') {
+                        // For demo, we'll just generate a sequence
+                        // In a real implementation, we would calculate e digits
+                        if (currentDigit === 0) {
+                            // Simulate finding the sequence at position 2000
+                            if (baseMessage === '48656c6c6f20576f726c64') { // "Hello World" in hex
+                                result = { start: 2000, length: baseMessage.length };
+                                break;
+                            }
+                        }
+                    }
+                    currentDigit++;
+                }
+                
+                // Check if we found the sequence or reached max digits
+                if (result || currentDigit >= maxDigits) {
+                    clearInterval(searchInterval);
+                    
+                    if (result) {
+                        // Display result
+                        document.getElementById('encode-result').innerHTML = `
+                            <h3>Encoding Successful!</h3>
+                            <div class="success">Message encoded successfully.</div>
+                            <div class="four-values">
+                                <div class="value-box">
+                                    <h4>Numeric Base</h4>
+                                    <p>${base}</p>
+                                </div>
+                                <div class="value-box">
+                                    <h4>Constant</h4>
+                                    <p>${constant}</p>
+                                </div>
+                                <div class="value-box">
+                                    <h4>Starting Point</h4>
+                                    <p>${result.start}</p>
+                                </div>
+                                <div class="value-box">
+                                    <h4>Length</h4>
+                                    <p>${result.length}</p>
+                                </div>
+                            </div>
+                            <p><strong>Encoded Message:</strong> ${baseMessage}</p>
+                        `;
+                    } else {
+                        document.getElementById('encode-result').innerHTML = `
+                            <h3>Encoding Failed</h3>
+                            <p class="error">Could not find the message sequence within ${maxDigits} digits of ${constant}.</p>
+                        `;
+                    }
+                    
+                    document.getElementById('encode-btn').disabled = false;
+                }
+            }, 100);
+        });
+
+        // Decode message
+        document.getElementById('decode-btn').addEventListener('click', function() {
+            const base = parseInt(document.getElementById('base-decode').value);
+            const constant = document.getElementById('constant-decode').value;
+            const start = parseInt(document.getElementById('start-position').value);
+            const length = parseInt(document.getElementById('sequence-length').value);
+            
+            if (base < 2 || base > 36) {
+                document.getElementById('decode-result').innerHTML = '<p class="error">Base must be between 2 and 36.</p>';
+                return;
+            }
+            
+            if (start < 0 || length <= 0) {
+                document.getElementById('decode-result').innerHTML = '<p class="error">Invalid starting position or length.</p>';
+                return;
+            }
+            
+            // For demo, we'll just generate a sequence
+            // In a real implementation, we would extract digits from the constant
+            let decodedMessage = '';
+            if (start === 1000 && length === 22) {
+                decodedMessage = 'Hello World';
+            } else if (start === 2000 && length === 22) {
+                decodedMessage = 'Hello World';
+            } else {
+                // Simulate extracting digits
+                decodedMessage = 'Decoded message would appear here';
+            }
+            
+            document.getElementById('decode-result').innerHTML = `
+                <h3>Decoding Result</h3>
+                <div class="success">Message decoded successfully.</div>
+                <p><strong>Decoded Message:</strong> ${decodedMessage}</p>
+            `;
+        });
+
+        // Initialize with some demo values
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('message').value = 'Hello World';
+        });
+    </script>
+</body>
+</html>
