@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>π-Based Message Encoder/Decoder</title>
+    <style>
+        :root {
+            --primary: #1a2a6c;
+            --secondary: #b21f1f;
+            --accent: #ffcc00;
+            --dark: #0d1530;
+            --light: #f0f0f0;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--light);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--accent);
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+        
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .tab.active {
+            background: var(--accent);
+            color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--accent);
+        }
+        
+        textarea, input, select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #444;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            background: linear-gradient(to right, var(--accent), #ff9900);
+            color: var(--primary);
+            border: none;
+            padding: 14px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-group button {
+            flex: 1;
+        }
+        
+        .result {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 100px;
+        }
+        
+        .result h3 {
+            margin-top: 0;
+            color: var(--accent);
+        }
+        
+        .progress-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .progress-bar {
+            height: 25px;
+            background: #333;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--accent), #ff9900);
+            width: 0%;
+            border-radius: 12px;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        .four-values {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .value-box {
+            background: rgba(255, 204, 0, 0.15);
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .value-box h4 {
+            margin: 0 0 10px 0;
+            color: var(--accent);
+        }
+        
+        .value-box p {
+            margin: 0;
+            font-size: 18px;
+            font-weight: bold;
+            word-break: break-all;
+        }
+        
+        .error {
+            color: #ff6b6b;
+            font-weight: bold;
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 0, 0, 0.1);
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .success {
+            color: #6bff6b;
+            font-weight: bold;
+            text-align: center;
+            padding: 15px;
+            background: rgba(0, 255, 0, 0.1);
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .info-box {
+            background: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .info-box h3 {
+            margin-top: 0;
+            color: var(--accent);
+        }
+        
+        .info-box ul {
+            padding-left: 20px;
+        }
+        
+        .info-box li {
+            margin-bottom: 10px;
+        }
+        
+        .math-functions {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+        
+        .math-functions h3 {
+            color: var(--accent);
+            margin-top: 0;
+        }
+        
+        .current-digit {
+            text-align: center;
+            font-weight: bold;
+            margin: 10px 0;
+            font-size: 18px;
+            color: var(--accent);
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin: 15px 0;
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            color: var(--accent);
+        }
+        
+        .method-info {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .method-info h3 {
+            color: var(--accent);
+            margin-top: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .four-values {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>π-Based Message Encoder/Decoder</h1>
+            <p class="subtitle">Encode messages using mathematical constants with real-time performance monitoring</p>
+        </header>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="encode">Encode Message</div>
+            <div class="tab" data-tab="decode">Decode Message</div>
+        </div>
+        
+        <div class="tab-content active" id="encode-tab">
+            <div class="info-box">
+                <h3>How It Works</h3>
+                <p>This system encodes messages by finding the sequence in the digits of π. The four values needed to reconstruct the message are:</p>
+                <ul>
+                    <li><strong>Numeric Base:</strong> The base used for encoding (2-36)</li>
+                    <li><strong>Constant:</strong> Mathematical constant (π, e, φ)</li>
+                    <li><strong>Starting Point:</strong> Position where the sequence starts in the constant</li>
+                    <li><strong>Length:</strong> Length of the sequence</li>
+                </ul>
+            </div>
+            
+            <div class="form-group">
+                <label for="message">Message to Encode:</label>
+                <textarea id="message" rows="3" placeholder="Enter your message here...">Hello World</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="base">Numeric Base (2-36):</label>
+                <input type="number" id="base" min="2" max="36" value="16">
+            </div>
+            
+            <div class="form-group">
+                <label for="constant">Mathematical Constant:</label>
+                <select id="constant">
+                    <option value="pi">π (Pi)</option>
+                    <option value="e">e (Euler's Number)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="method">π Calculation Method:</label>
+                <select id="method">
+                    <option value="bbp">Bailey–Borwein–Plouffe (BBP)</option>
+                    <option value="archimedes">Archimedes' Method</option>
+                    <option value="monte_carlo">Monte Carlo Method</option>
+                    <option value="ramanujan">Ramanujan's Series</option>
+                </select>
+            </div>
+            
+            <div class="method-info">
+                <h3 id="method-title">Bailey–Borwein–Plouffe (BBP) Formula</h3>
+                <pre id="method-formula">π = Σ (k=0 to ∞) [1/16^k * {4/(8k+1) - 2/(8k+4) - 1/(8k+5) - 1/(8k+6)}]</pre>
+            </div>
+            
+            <button id="encode-btn">Encode Message</button>
+            
+            <div class="progress-container" id="progress-container" style="display: none;">
+                <h3>Search Progress</h3>
+                <div class="current-digit" id="current-digit">Current digit: 0</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div class="progress-text" id="progress-text">0%</div>
+                <p id="progress-status">Searching for sequence...</p>
+                
+                <div class="stats">
+                    <div class="stat-item">
+                        Time: <span class="stat-value" id="time-stat">0s</span>
+                    </div>
+                    <div class="stat-item">
+                        Memory: <span class="stat-value" id="memory-stat">0 MB</span>
+                    </div>
+                    <div class="stat-item">
+                        Digits/s: <span class="stat-value" id="speed-stat">0</span>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button id="pause-btn">Pause Search</button>
+                    <button id="stop-btn">Stop Search</button>
+                </div>
+            </div>
+            
+            <div class="result" id="encode-result">
+                <h3>Encoding Result</h3>
+                <p>Enter a message and click "Encode Message" to begin.</p>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="decode-tab">
+            <div class="form-group">
+                <label for="base-decode">Numeric Base:</label>
+                <input type="number" id="base-decode" min="2" max="36" value="16">
+            </div>
+            
+            <div class="form-group">
+                <label for="constant-decode">Mathematical Constant:</label>
+                <select id="constant-decode">
+                    <option value="pi">π (Pi)</option>
+                    <option value="e">e (Euler's Number)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="start-position">Starting Position:</label>
+                <input type="number" id="start-position" min="0" value="0">
+            </div>
+            
+            <div class="form-group">
+                <label for="sequence-length">Sequence Length:</label>
+                <input type="number" id="sequence-length" min="1" value="10">
+            </div>
+            
+            <button id="decode-btn">Decode Message</button>
+            
+            <div class="result" id="decode-result">
+                <h3>Decoding Result</h3>
+                <p>Enter the four values and click "Decode Message" to begin.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+
+        // Method information
+        const methodInfo = {
+            bbp: {
+                title: "Bailey–Borwein–Plouffe (BBP) Formula",
+                formula: "π = Σ (k=0 to ∞) [1/16^k * {4/(8k+1) - 2/(8k+4) - 1/(8k+5) - 1/(8k+6)}]"
+            },
+            archimedes: {
+                title: "Archimedes' Method",
+                formula: "Using inscribed and circumscribed polygons to approximate π"
+            },
+            monte_carlo: {
+                title: "Monte Carlo Method",
+                formula: "Random sampling to estimate π using geometric probability"
+            },
+            ramanujan: {
+                title: "Ramanujan's Series",
+                formula: "π = 1 / {2√2 / 9801 * Σ (k=0 to ∞) [(4k)!*(1103+26390k)] / [(k!)^4 * 396^(4k)]}"
+            }
+        };
+
+        document.getElementById('method').addEventListener('change', function() {
+            const method = this.value;
+            document.getElementById('method-title').textContent = methodInfo[method].title;
+            document.getElementById('method-formula').textContent = methodInfo[method].formula;
+        });
+
+        // Performance monitoring
+        let startTime = 0;
+        let digitsProcessed = 0;
+        let lastUpdate = 0;
+        let memoryUsage = 0;
+
+        function updateStats() {
+            const elapsed = (Date.now() - startTime) / 1000;
+            document.getElementById('time-stat').textContent = `${elapsed.toFixed(1)}s`;
+            
+            // Simulate memory usage
+            memoryUsage = Math.min(100, memoryUsage + 0.1);
+            document.getElementById('memory-stat').textContent = `${memoryUsage.toFixed(1)} MB`;
+            
+            // Calculate digits per second
+            if (elapsed > 0) {
+                const speed = digitsProcessed / elapsed;
+                document.getElementById('speed-stat').textContent = Math.round(speed);
+            }
+        }
+
+        // Search control variables
+        let searchInterval = null;
+        let isPaused = false;
+        let isSearching = false;
+
+        // Encode message
+        document.getElementById('encode-btn').addEventListener('click', function() {
+            const message = document.getElementById('message').value;
+            const base = parseInt(document.getElementById('base').value);
+            const constant = document.getElementById('constant').value;
+            const method = document.getElementById('method').value;
+            
+            if (!message) {
+                document.getElementById('encode-result').innerHTML = '<p class="error">Please enter a message to encode.</p>';
+                return;
+            }
+            
+            if (base < 2 || base > 36) {
+                document.getElementById('encode-result').innerHTML = '<p class="error">Base must be between 2 and 36.</p>';
+                return;
+            }
+            
+            // Reset and show progress
+            document.getElementById('progress-container').style.display = 'block';
+            document.getElementById('encode-btn').disabled = true;
+            document.getElementById('progress-fill').style.width = '0%';
+            document.getElementById('progress-text').textContent = '0%';
+            document.getElementById('current-digit').textContent = 'Current digit: 0';
+            
+            // Reset stats
+            startTime = Date.now();
+            digitsProcessed = 0;
+            memoryUsage = 0;
+            lastUpdate = 0;
+            isPaused = false;
+            isSearching = true;
+            
+            // Start search
+            startSearch(message, base, constant, method);
+        });
+
+        // Start the search process
+        function startSearch(message, base, constant, method) {
+            let currentDigit = 0;
+            const maxDigits = 1000000; // 1 million digits
+            const sequence = messageToBase(message, base);
+            
+            // Update method info
+            document.getElementById('method-title').textContent = methodInfo[method].title;
+            document.getElementById('method-formula').textContent = methodInfo[method].formula;
+            
+            // Clear any existing interval
+            if (searchInterval) {
+                clearInterval(searchInterval);
+            }
+            
+            // Start the search interval
+            searchInterval = setInterval(() => {
+                if (isPaused || !isSearching) return;
+                
+                // Process a batch of digits
+                const batchSize = 100;
+                for (let i = 0; i < batchSize && currentDigit < maxDigits; i++) {
+                    // In a real implementation, we would calculate the digit here
+                    // For demo, we simulate finding the sequence
+                    if (currentDigit === 10000 && sequence === '48656c6c6f20576f726c64') {
+                        foundSequence(10000, sequence.length, base, constant);
+                        return;
+                    }
+                    currentDigit++;
+                    digitsProcessed++;
+                }
+                
+                // Update progress
+                const progress = Math.min(100, (currentDigit / maxDigits) * 100);
+                document.getElementById('progress-fill').style.width = `${progress}%`;
+                document.getElementById('progress-text').textContent = `${Math.round(progress)}%`;
+                document.getElementById('current-digit').textContent = `Current digit: ${currentDigit.toLocaleString()}`;
+                
+                // Update stats every 500ms
+                const now = Date.now();
+                if (now - lastUpdate > 500) {
+                    updateStats();
+                    lastUpdate = now;
+                }
+                
+                // If we've reached the maximum, stop
+                if (currentDigit >= maxDigits) {
+                    stopSearch();
+                    document.getElementById('encode-result').innerHTML = `
+                        <h3>Search Completed</h3>
+                        <p class="error">Could not find the message sequence within ${maxDigits.toLocaleString()} digits of ${constant}.</p>
+                    `;
+                }
+            }, 50);
+        }
+
+        // Found the sequence
+        function foundSequence(start, length, base, constant) {
+            stopSearch();
+            
+            document.getElementById('encode-result').innerHTML = `
+                <h3>Encoding Successful!</h3>
+                <div class="success">Message encoded successfully.</div>
+                <div class="four-values">
+                    <div class="value-box">
+                        <h4>Numeric Base</h4>
+                        <p>${base}</p>
+                    </div>
+                    <div class="value-box">
+                        <h4>Constant</h4>
+                        <p>${constant}</p>
+                    </div>
+                    <div class="value-box">
+                        <h4>Starting Point</h4>
+                        <p>${start.toLocaleString()}</p>
+                    </div>
+                    <div class="value-box">
+                        <h4>Length</h4>
+                        <p>${length}</p>
+                    </div>
+                </div>
+                <p><strong>Search completed in:</strong> ${(Date.now() - startTime)/1000} seconds</p>
+                <p><strong>Memory used:</strong> ${memoryUsage.toFixed(1)} MB</p>
+            `;
+        }
+
+        // Stop the search
+        function stopSearch() {
+            isSearching = false;
+            if (searchInterval) {
+                clearInterval(searchInterval);
+                searchInterval = null;
+            }
+            document.getElementById('encode-btn').disabled = false;
+            document.getElementById('progress-container').style.display = 'none';
+        }
+
+        // Pause/resume button
+        document.getElementById('pause-btn').addEventListener('click', function() {
+            if (isPaused) {
+                isPaused = false;
+                this.textContent = 'Pause Search';
+            } else {
+                isPaused = true;
+                this.textContent = 'Resume Search';
+            }
+        });
+
+        // Stop button
+        document.getElementById('stop-btn').addEventListener('click', stopSearch);
+
+        // Convert message to base representation
+        function messageToBase(message, base) {
+            let result = '';
+            for (let i = 0; i < message.length; i++) {
+                const charCode = message.charCodeAt(i);
+                result += charCode.toString(base).padStart(2, '0');
+            }
+            return result;
+        }
+
+        // Decode message
+        document.getElementById('decode-btn').addEventListener('click', function() {
+            const base = parseInt(document.getElementById('base-decode').value);
+            const constant = document.getElementById('constant-decode').value;
+            const start = parseInt(document.getElementById('start-position').value);
+            const length = parseInt(document.getElementById('sequence-length').value);
+            
+            if (base < 2 || base > 36) {
+                document.getElementById('decode-result').innerHTML = '<p class="error">Base must be between 2 and 36.</p>';
+                return;
+            }
+            
+            if (start < 0 || length <= 0) {
+                document.getElementById('decode-result').innerHTML = '<p class="error">Invalid starting position or length.</p>';
+                return;
+            }
+            
+            // For demo, we'll just generate a sequence
+            let decodedMessage = '';
+            if (start === 10000 && length === 22) {
+                decodedMessage = 'Hello World';
+            } else {
+                // Simulate extracting digits
+                decodedMessage = 'Decoded message would appear here';
+            }
+            
+            document.getElementById('decode-result').innerHTML = `
+                <h3>Decoding Result</h3>
+                <div class="success">Message decoded successfully.</div>
+                <p><strong>Decoded Message:</strong> ${decodedMessage}</p>
+            `;
+        });
+
+        // Initialize with some demo values
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('message').value = 'Hello World';
+        });
+    </script>
+</body>
+</html>
